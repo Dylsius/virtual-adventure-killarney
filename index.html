@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="https://i.imgur.com/GAjV2PZ.png" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://static.elfsight.com/platform/platform.js" async></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Virtual Adventure Killarney - Complete VR Arcade Website</title>
+    <script>
+      // Netlify Identity redirect for Decap CMS
+      if (window.location.hash.includes('invite_token') || window.location.hash.includes('access_token')) {
+        window.location.href = '/admin/' + window.location.hash;
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
