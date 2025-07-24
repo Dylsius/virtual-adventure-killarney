@@ -1,0 +1,34 @@
+backend:
+  name: git-gateway
+  branch: main
+
+media_folder: public/images/uploads
+public_folder: /images/uploads
+
+collections:
+  - name: "blog"
+    label: "Blog Posts"
+    folder: "content/blog"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    fields:
+      - {label: "Title", name: "title", widget: "string"}
+      - {label: "Publish Date", name: "date", widget: "datetime"}
+      - {label: "Author", name: "author", widget: "string", default: "Virtual Adventure Killarney"}
+      - {label: "Featured Image", name: "image", widget: "image", required: false}
+      - {label: "Excerpt", name: "excerpt", widget: "text", required: false}
+      - {label: "Body", name: "body", widget: "markdown"}
+      - {label: "Published", name: "published", widget: "boolean", default: true}
+
+  - name: "videos"
+    label: "Video Gallery"
+    folder: "content/videos"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - {label: "Title", name: "title", widget: "string"}
+      - {label: "Description", name: "description", widget: "text", required: false}
+      - {label: "Video URL", name: "video_url", widget: "string", hint: "YouTube, Vimeo, or direct video URL"}
+      - {label: "Thumbnail", name: "thumbnail", widget: "image", required: false}
+      - {label: "Date Added", name: "date", widget: "datetime"}
+      - {label: "Published", name: "published", widget: "boolean", default: true}

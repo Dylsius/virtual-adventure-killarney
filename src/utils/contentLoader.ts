@@ -1,0 +1,117 @@
+export interface BlogPost {
+  slug: string;
+  title: string;
+  date: string;
+  author: string;
+  image?: string;
+  excerpt?: string;
+  body: string;
+  published: boolean;
+}
+
+export interface VideoItem {
+  slug: string;
+  title: string;
+  description?: string;
+  video_url: string;
+  thumbnail?: string;
+  date: string;
+  published: boolean;
+}
+
+// Parse frontmatter from markdown content
+function parseFrontmatter(content: string): { frontmatter: any; body: string } {
+  const frontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/;
+  const match = content.match(frontmatterRegex);
+  
+  if (!match) {
+    return { frontmatter: {}, body: content };
+  }
+
+  const frontmatterText = match[1];
+  const body = match[2];
+  
+  // Simple YAML parser for frontmatter
+  const frontmatter: any = {};
+  frontmatterText.split('\n').forEach(line => {
+    const colonIndex = line.indexOf(':');
+    if (colonIndex > 0) {
+      const key = line.substring(0, colonIndex).trim();
+      let value = line.substring(colonIndex + 1).trim();
+      
+      // Remove quotes if present
+      if ((value.startsWith('"') && value.endsWith('"')) || 
+          (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.slice(1, -1);
+      }
+      
+      // Convert boolean strings
+      if (value === 'true') value = true;
+      if (value === 'false') value = false;
+      
+      frontmatter[key] = value;
+    }
+  });
+
+  return { frontmatter, body };
+}
+
+// Load blog posts from the content directory
+export async function loadBlogPosts(): Promise<BlogPost[]> {
+  try {
+    // In a real implementation, you'd fetch from your content directory
+    // For now, we'll return the sample post
+    const samplePost: BlogPost = {
+      slug: 'welcome-to-virtual-adventure',
+      title: 'Welcome to Virtual Adventure Killarney',
+      date: '2025-01-17T10:00:00.000Z',
+      author: 'Virtual Adventure Killarney',
+      image: 'https://i.imgur.com/29UVJAB.jpeg',
+      excerpt: 'Experience the future of entertainment with our cutting-edge VR experiences in the heart of Killarney.',
+      body: `# Welcome to Virtual Adventure Killarney
+
+We're excited to welcome you to the most immersive virtual reality experience in Killarney! Our state-of-the-art VR arcade offers a wide range of experiences suitable for all ages.
+
+## What We Offer
+
+- **6 Different VR Experiences**: From racing simulators to relaxing virtual environments
+- **Family-Friendly**: Experiences suitable for ages 4 and up
+- **Group Bookings**: Perfect for birthday parties, team building, or family outings
+- **Professional Equipment**: Latest VR technology for the best possible experience
+
+## Book Your Adventure Today
+
+Ready to step into another world? Book your VR experience today and discover what makes Virtual Adventure Killarney the premier destination for virtual reality entertainment.
+
+Visit our booking page or call us at +353 (87) 483 8264 to reserve your spot!`,
+      published: true
+    };
+
+    return [samplePost];
+  } catch (error) {
+    console.error('Error loading blog posts:', error);
+    return [];
+  }
+}
+
+// Load video gallery items from the content directory
+export async function loadVideoItems(): Promise<VideoItem[]> {
+  try {
+    // In a real implementation, you'd fetch from your content directory
+    // For now, we'll return the sample video
+    const sampleVideo: VideoItem = {
+      slug: 'vr-experience-showcase',
+      title: 'VR Experience Showcase',
+      description: 'Get a glimpse of the amazing VR experiences waiting for you at Virtual Adventure Killarney',
+      video_url: 'https://res.cloudinary.com/darq9ofvp/video/upload/v1752331524/VR-Killarney_cgoz2u.mov',
+      thumbnail: 'https://i.imgur.com/29UVJAB.jpeg',
+      date: '2025-01-17T10:00:00.000Z',
+      published: true
+    };
+
+    return [sampleVideo];
+  } catch (error) {
+    console.error('Error loading video items:', error);
+    return [];
+  }
+}
