@@ -1,6 +1,7 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import { Play, Calendar } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Play, Calendar, ArrowRight } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import Footer from '../components/Footer';
 import { loadVideoItems, VideoItem } from '../utils/contentLoader';
@@ -31,25 +32,6 @@ const VideoGallery: React.FC = () => {
       month: 'long',
       day: 'numeric'
     });
-  };
-
-  const getVideoEmbedUrl = (url: string) => {
-    // Convert YouTube URLs to embed format
-    if (url.includes('youtube.com/watch?v=')) {
-      const videoId = url.split('v=')[1].split('&')[0];
-      return `https://www.youtube.com/embed/${videoId}`;
-    }
-    if (url.includes('youtu.be/')) {
-      const videoId = url.split('youtu.be/')[1].split('?')[0];
-      return `https://www.youtube.com/embed/${videoId}`;
-    }
-    // Convert Vimeo URLs to embed format
-    if (url.includes('vimeo.com/')) {
-      const videoId = url.split('vimeo.com/')[1].split('?')[0];
-      return `https://player.vimeo.com/video/${videoId}`;
-    }
-    // Return original URL for direct video files
-    return url;
   };
 
   return (
@@ -83,50 +65,63 @@ const VideoGallery: React.FC = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {videos.map((video) => (
-                <div key={video.slug} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-                  <div className="relative">
-                    {video.video_url.includes('youtube.com') || video.video_url.includes('youtu.be') || video.video_url.includes('vimeo.com') ? (
-                      <div className="aspect-video">
-                        <iframe
-                          src={getVideoEmbedUrl(video.video_url)}
-                          title={video.title}
-                          frameBorder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                          className="w-full h-full"
-                        />
+                <Link 
+                  key={video.slug} 
+                  to={`/videos/${video.slug}`}
+                  className="block group"
+                >
+                  <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group-hover:transform group-hover:-translate-y-1">
+                    <div className="relative">
+                      {/* Thumbnail with play overlay */}
+                      <div className="aspect-video bg-black relative overflow-hidden">
+                        {video.thumbnail ? (
+                          <img 
+                            src={video.thumbnail} 
+                            alt={video.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center">
+                            <Play className="h-16 w-16 text-white" />
+                          </div>
+                        )}
+                        
+                        {/* Play button overlay */}
+                        <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <div className="bg-white bg-opacity-90 rounded-full p-4 transform group-hover:scale-110 transition-transform">
+                            <Play className="h-8 w-8 text-blue-600 ml-1" />
+                          </div>
+                        </div>
                       </div>
-                    ) : (
-                      <div className="aspect-video bg-black">
-                        <video
-                          controls
-                          className="w-full h-full object-cover"
-                          poster={video.thumbnail}
-                        >
-                          <source src={video.video_url} type="video/mp4" />
-                          Your browser does not support the video tag.
-                        </video>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="p-6">
-                    <div className="flex items-center space-x-2 text-sm text-blue-600 mb-3">
-                      <Calendar className="h-4 w-4" />
-                      <span style={{ fontFamily: 'Montserrat, sans-serif' }}>{formatDate(video.date)}</span>
                     </div>
                     
-                    <h3 className="text-xl font-bold text-blue-900 mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                      {video.title}
-                    </h3>
-                    
-                    {video.description && (
-                      <p className="text-blue-700 leading-relaxed" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                        {video.description}
-                      </p>
-                    )}
+                    <div className="p-6">
+                      <div className="flex items-center space-x-2 text-sm text-blue-600 mb-3">
+                        <Calendar className="h-4 w-4" />
+                        <span style={{ fontFamily: 'Montserrat, sans-serif' }}>{formatDate(video.date)}</span>
+                      </div>
+                      
+                      <h3 className="text-xl font-bold text-blue-900 mb-3 group-hover:text-blue-700 transition-colors" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                        {video.title}
+                      </h3>
+                      
+                      {video.description && (
+                        <p className="text-blue-700 leading-relaxed mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                          {video.description}
+                        </p>
+                      )}
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2 text-blue-600 group-hover:text-blue-800 transition-colors">
+                          <span className="font-medium" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                            Watch Video
+                          </span>
+                          <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}

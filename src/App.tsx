@@ -9,6 +9,7 @@ import BookingSuccess from './pages/BookingSuccess';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
 import VideoGallery from './pages/VideoGallery';
+import VideoPost from './pages/VideoPost';
 import Reviews from './pages/Reviews';
 import Login from './pages/Login';
 import CookiesPopup from './components/CookiesPopup';
@@ -30,6 +31,7 @@ function App() {
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/videos" element={<VideoGallery />} />
+              <Route path="/videos/:slug" element={<VideoPost />} />
               <Route path="/reviews" element={<Reviews />} />
               <Route path="/login" element={<Login />} />
             </Routes>

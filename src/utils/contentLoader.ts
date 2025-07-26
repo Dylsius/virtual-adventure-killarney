@@ -130,8 +130,42 @@ Visit our booking page or call us at +353 (87) 483 8264 to reserve your spot!`,
 // Load video gallery items from the content directory
 export async function loadVideoItems(): Promise<VideoItem[]> {
   try {
-    // In a real implementation, you'd fetch from your content directory
-    // For now, we'll return the sample video
+    // Use Vite's import.meta.glob to load all markdown files from content/videos
+    const videoModules = import.meta.glob('/content/videos/*.md', { as: 'raw' });
+    const videos: VideoItem[] = [];
+
+    for (const [path, moduleLoader] of Object.entries(videoModules)) {
+      try {
+        const content = await moduleLoader();
+        const { frontmatter } = parseFrontmatter(content);
+        
+        // Extract slug from filename
+        const filename = path.split('/').pop() || '';
+        const slug = filename.replace('.md', '');
+        
+        const video: VideoItem = {
+          slug,
+          title: String(frontmatter.title || 'Untitled Video'),
+          description: frontmatter.description ? String(frontmatter.description) : undefined,
+          video_url: String(frontmatter.video_url || ''),
+          thumbnail: frontmatter.thumbnail ? String(frontmatter.thumbnail) : undefined,
+          date: String(frontmatter.date || new Date().toISOString()),
+          published: Boolean(frontmatter.published !== false) // Default to true if not specified
+        };
+
+        videos.push(video);
+      } catch (error) {
+        console.error(`Error processing video item ${path}:`, error);
+      }
+    }
+
+    // Sort videos by date (newest first)
+    videos.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    return videos;
+  } catch (error) {
+    console.error('Error loading video items:', error);
+    // Fallback to sample video if there's an error
     const sampleVideo: VideoItem = {
       slug: 'vr-experience-showcase',
       title: 'VR Experience Showcase',
@@ -143,8 +177,5 @@ export async function loadVideoItems(): Promise<VideoItem[]> {
     };
 
     return [sampleVideo];
-  } catch (error) {
-    console.error('Error loading video items:', error);
-    return [];
   }
 }
