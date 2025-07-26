@@ -1,6 +1,6 @@
 backend:
   name: git-gateway
-  branch: decap-workflow
+  branch: master
 
 media_folder: public/images/uploads
 public_folder: /images/uploads
