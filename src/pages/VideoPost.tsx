@@ -67,7 +67,7 @@ const VideoPost: React.FC = () => {
   if (loading) {
     return (
       <>
-        <section className="py-20 bg-white min-h-screen mt-20">
+        <section className="bg-white min-h-screen mt-8 mb-8">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -83,7 +83,7 @@ const VideoPost: React.FC = () => {
   if (notFound || !video) {
     return (
       <>
-        <section className="py-20 bg-white min-h-screen mt-20">
+        <section className="bg-white min-h-screen mt-8 mb-8">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center py-12">
               <Play className="h-16 w-16 text-blue-300 mx-auto mb-4" />
@@ -111,7 +111,7 @@ const VideoPost: React.FC = () => {
 
   return (
     <>
-      <section className="py-20 bg-white min-h-screen mt-20">
+      <section className="bg-white min-h-screen mt-8 mb-8">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Back to Videos Link */}
           <div className="mb-8">

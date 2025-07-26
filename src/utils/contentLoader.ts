@@ -21,7 +21,8 @@ export interface VideoItem {
 
 // Parse frontmatter from markdown content
 function parseFrontmatter(content: string): { frontmatter: Record<string, string | boolean | number>; body: string } {
-  const frontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/;
+  // More robust regex that handles trailing spaces and different line endings
+  const frontmatterRegex = /^---\s*\r?\n([\s\S]*?)\r?\n---\s*\r?\n?([\s\S]*)$/;
   const match = content.match(frontmatterRegex);
   
   if (!match) {
@@ -29,26 +30,36 @@ function parseFrontmatter(content: string): { frontmatter: Record<string, string
   }
 
   const frontmatterText = match[1];
-  const body = match[2];
+  const body = match[2] || '';
   
   // Simple YAML parser for frontmatter
   const frontmatter: Record<string, string | boolean | number> = {};
-  frontmatterText.split('\n').forEach(line => {
+  frontmatterText.split(/\r?\n/).forEach(line => {
     const colonIndex = line.indexOf(':');
     if (colonIndex > 0) {
       const key = line.substring(0, colonIndex).trim();
       let value: string | boolean | number = line.substring(colonIndex + 1).trim();
       
-      // Remove quotes if present
-      if (typeof value === 'string' && 
-          ((value.startsWith('"') && value.endsWith('"')) || 
-           (value.startsWith("'") && value.endsWith("'")))) {
-        value = value.slice(1, -1);
+      // Handle empty values
+      if (!value) {
+        return;
+      }
+      
+      // Remove quotes if present (both single and double quotes)
+      if (typeof value === 'string') {
+        if ((value.startsWith('"') && value.endsWith('"')) || 
+            (value.startsWith("'") && value.endsWith("'"))) {
+          value = value.slice(1, -1);
+        }
       }
       
       // Convert boolean strings
       if (value === 'true') value = true;
-      if (value === 'false') value = false;
+      else if (value === 'false') value = false;
+      // Convert number strings
+      else if (typeof value === 'string' && !isNaN(Number(value)) && value !== '') {
+        value = Number(value);
+      }
       
       frontmatter[key] = value;
     }
