@@ -20,8 +20,9 @@ export interface VideoItem {
 }
 
 // Parse frontmatter from markdown content
-function parseFrontmatter(content: string): { frontmatter: any; body: string } {
-  const frontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/;
+function parseFrontmatter(content: string): { frontmatter: Record<string, string | boolean | number>; body: string } {
+  // More robust regex that handles trailing spaces and different line endings
+  const frontmatterRegex = /^---\s*\r?\n([\s\S]*?)\r?\n---\s*\r?\n?([\s\S]*)$/;
   const match = content.match(frontmatterRegex);
   
   if (!match) {
@@ -29,25 +30,36 @@ function parseFrontmatter(content: string): { frontmatter: any; body: string } {
   }
 
   const frontmatterText = match[1];
-  const body = match[2];
+  const body = match[2] || '';
   
   // Simple YAML parser for frontmatter
-  const frontmatter: any = {};
-  frontmatterText.split('\n').forEach(line => {
+  const frontmatter: Record<string, string | boolean | number> = {};
+  frontmatterText.split(/\r?\n/).forEach(line => {
     const colonIndex = line.indexOf(':');
     if (colonIndex > 0) {
       const key = line.substring(0, colonIndex).trim();
-      let value = line.substring(colonIndex + 1).trim();
+      let value: string | boolean | number = line.substring(colonIndex + 1).trim();
       
-      // Remove quotes if present
-      if ((value.startsWith('"') && value.endsWith('"')) || 
-          (value.startsWith("'") && value.endsWith("'"))) {
-        value = value.slice(1, -1);
+      // Handle empty values
+      if (!value) {
+        return;
+      }
+      
+      // Remove quotes if present (both single and double quotes)
+      if (typeof value === 'string') {
+        if ((value.startsWith('"') && value.endsWith('"')) || 
+            (value.startsWith("'") && value.endsWith("'"))) {
+          value = value.slice(1, -1);
+        }
       }
       
       // Convert boolean strings
       if (value === 'true') value = true;
-      if (value === 'false') value = false;
+      else if (value === 'false') value = false;
+      // Convert number strings
+      else if (typeof value === 'string' && !isNaN(Number(value)) && value !== '') {
+        value = Number(value);
+      }
       
       frontmatter[key] = value;
     }
@@ -59,8 +71,43 @@ function parseFrontmatter(content: string): { frontmatter: any; body: string } {
 // Load blog posts from the content directory
 export async function loadBlogPosts(): Promise<BlogPost[]> {
   try {
-    // In a real implementation, you'd fetch from your content directory
-    // For now, we'll return the sample post
+    // Use Vite's import.meta.glob to load all markdown files from content/blog
+    const blogModules = import.meta.glob('/content/blog/*.md', { as: 'raw' });
+    const posts: BlogPost[] = [];
+
+    for (const [path, moduleLoader] of Object.entries(blogModules)) {
+      try {
+        const content = await moduleLoader();
+        const { frontmatter, body } = parseFrontmatter(content);
+        
+        // Extract slug from filename
+        const filename = path.split('/').pop() || '';
+        const slug = filename.replace('.md', '');
+        
+        const post: BlogPost = {
+          slug,
+          title: String(frontmatter.title || 'Untitled'),
+          date: String(frontmatter.date || new Date().toISOString()),
+          author: String(frontmatter.author || 'Virtual Adventure Killarney'),
+          image: frontmatter.image ? String(frontmatter.image) : undefined,
+          excerpt: frontmatter.excerpt ? String(frontmatter.excerpt) : undefined,
+          body: body.trim(),
+          published: Boolean(frontmatter.published !== false) // Default to true if not specified
+        };
+
+        posts.push(post);
+      } catch (error) {
+        console.error(`Error processing blog post ${path}:`, error);
+      }
+    }
+
+    // Sort posts by date (newest first)
+    posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    return posts;
+  } catch (error) {
+    console.error('Error loading blog posts:', error);
+    // Fallback to sample post if there's an error
     const samplePost: BlogPost = {
       slug: 'welcome-to-virtual-adventure',
       title: 'Welcome to Virtual Adventure Killarney',
@@ -88,17 +135,48 @@ Visit our booking page or call us at +353 (87) 483 8264 to reserve your spot!`,
     };
 
     return [samplePost];
-  } catch (error) {
-    console.error('Error loading blog posts:', error);
-    return [];
   }
 }
 
 // Load video gallery items from the content directory
 export async function loadVideoItems(): Promise<VideoItem[]> {
   try {
-    // In a real implementation, you'd fetch from your content directory
-    // For now, we'll return the sample video
+    // Use Vite's import.meta.glob to load all markdown files from content/videos
+    const videoModules = import.meta.glob('/content/videos/*.md', { as: 'raw' });
+    const videos: VideoItem[] = [];
+
+    for (const [path, moduleLoader] of Object.entries(videoModules)) {
+      try {
+        const content = await moduleLoader();
+        const { frontmatter } = parseFrontmatter(content);
+        
+        // Extract slug from filename
+        const filename = path.split('/').pop() || '';
+        const slug = filename.replace('.md', '');
+        
+        const video: VideoItem = {
+          slug,
+          title: String(frontmatter.title || 'Untitled Video'),
+          description: frontmatter.description ? String(frontmatter.description) : undefined,
+          video_url: String(frontmatter.video_url || ''),
+          thumbnail: frontmatter.thumbnail ? String(frontmatter.thumbnail) : undefined,
+          date: String(frontmatter.date || new Date().toISOString()),
+          published: Boolean(frontmatter.published !== false) // Default to true if not specified
+        };
+
+        videos.push(video);
+      } catch (error) {
+        console.error(`Error processing video item ${path}:`, error);
+      }
+    }
+
+    // Sort videos by date (newest first)
+    videos.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    return videos;
+  } catch (error) {
+    console.error('Error loading video items:', error);
+    // Fallback to sample video if there's an error
     const sampleVideo: VideoItem = {
       slug: 'vr-experience-showcase',
       title: 'VR Experience Showcase',
@@ -110,8 +188,5 @@ export async function loadVideoItems(): Promise<VideoItem[]> {
     };
 
     return [sampleVideo];
-  } catch (error) {
-    console.error('Error loading video items:', error);
-    return [];
   }
 }
