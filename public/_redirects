@@ -1,2 +1,6 @@
-/admin/*  /admin/index.html   200
-/*        /index.html         200
+# Admin routes should serve the CMS interface
+/admin             /admin/index.html   200
+/admin/*           /admin/index.html   200
+
+# All other routes go to React app
+/*                 /index.html         200

@@ -16,6 +16,9 @@ logo_url: https://virtualadventurekillarney.com/images/logo.png
 # Editorial workflow for content review
 publish_mode: editorial_workflow
 
+# Show preview links
+show_preview_links: true
+
 collections:
   - name: "blog"
     label: "Blog Posts"
