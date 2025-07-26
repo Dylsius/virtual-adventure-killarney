@@ -15,7 +15,7 @@ const Home: React.FC = () => {
       
       {/* Call to Action Section */}
       <section className="py-20 bg-gradient-to-br from-blue-50 to-blue-100">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="bg-white rounded-2xl shadow-xl p-12">
             <h2 className="text-4xl md:text-5xl font-bold text-blue-900 mb-6" style={{ fontFamily: 'Montserrat, sans-serif' }}>{t('readyForAdventure')}</h2>
             <Link 

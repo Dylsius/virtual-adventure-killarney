@@ -5,30 +5,43 @@ backend:
 media_folder: public/images/uploads
 public_folder: /images/uploads
 
+# Enable local backend for development
+local_backend: true
+
+# Site configuration
+site_url: https://virtualadventurekillarney.com
+display_url: https://virtualadventurekillarney.com
+logo_url: https://virtualadventurekillarney.com/images/logo.png
+
+# Editorial workflow for content review
+publish_mode: editorial_workflow
+
 collections:
   - name: "blog"
     label: "Blog Posts"
     folder: "content/blog"
     create: true
     slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    preview_path: "blog/{{slug}}"
     fields:
-      - {label: "Title", name: "title", widget: "string"}
-      - {label: "Publish Date", name: "date", widget: "datetime"}
+      - {label: "Title", name: "title", widget: "string", required: true}
+      - {label: "Publish Date", name: "date", widget: "datetime", required: true}
       - {label: "Author", name: "author", widget: "string", default: "Virtual Adventure Killarney"}
-      - {label: "Featured Image", name: "image", widget: "image", required: false}
-      - {label: "Excerpt", name: "excerpt", widget: "text", required: false}
-      - {label: "Body", name: "body", widget: "markdown"}
-      - {label: "Published", name: "published", widget: "boolean", default: true}
+      - {label: "Featured Image", name: "image", widget: "image", required: false, hint: "Optional image to display with the blog post"}
+      - {label: "Excerpt", name: "excerpt", widget: "text", required: false, hint: "Short description shown in blog list"}
+      - {label: "Body", name: "body", widget: "markdown", required: true}
+      - {label: "Published", name: "published", widget: "boolean", default: true, hint: "Uncheck to save as draft"}
 
   - name: "videos"
     label: "Video Gallery"
     folder: "content/videos"
     create: true
     slug: "{{slug}}"
+    preview_path: "videos"
     fields:
-      - {label: "Title", name: "title", widget: "string"}
-      - {label: "Description", name: "description", widget: "text", required: false}
-      - {label: "Video URL", name: "video_url", widget: "string", hint: "YouTube, Vimeo, or direct video URL"}
-      - {label: "Thumbnail", name: "thumbnail", widget: "image", required: false}
-      - {label: "Date Added", name: "date", widget: "datetime"}
-      - {label: "Published", name: "published", widget: "boolean", default: true}
+      - {label: "Title", name: "title", widget: "string", required: true}
+      - {label: "Description", name: "description", widget: "text", required: false, hint: "Brief description of the video content"}
+      - {label: "Video URL", name: "video_url", widget: "string", required: true, hint: "YouTube, Vimeo, or direct video URL"}
+      - {label: "Thumbnail", name: "thumbnail", widget: "image", required: false, hint: "Custom thumbnail image (optional)"}
+      - {label: "Date Added", name: "date", widget: "datetime", required: true}
+      - {label: "Published", name: "published", widget: "boolean", default: true, hint: "Uncheck to hide from gallery"}

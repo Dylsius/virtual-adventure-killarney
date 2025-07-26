@@ -8,7 +8,7 @@ const Reviews: React.FC = () => {
 
   return (
     <>
-      <section className="py-8 bg-white min-h-screen mt-20">
+      <section className="bg-white min-h-screen mt-8 mb-8">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* SociableKIT Widget Container */}
           <div className="bg-white rounded-xl shadow-lg p-8">
