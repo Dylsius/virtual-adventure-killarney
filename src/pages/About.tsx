@@ -8,13 +8,13 @@ const About: React.FC = () => {
 
   return (
     <>
-      <section className="py-20 bg-white mt-20">
+      <section className="bg-white mt-8 mb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h1 className="text-4xl font-bold text-blue-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>{t('aboutTitle')}</h1>
           </div>
 
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-7xl mx-auto">
             <div className="rounded-xl overflow-hidden mb-8 h-64">
               <img 
                 src="https://i.imgur.com/29UVJAB.jpeg" 

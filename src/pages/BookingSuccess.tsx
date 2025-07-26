@@ -74,7 +74,7 @@ const BookingSuccess: React.FC = () => {
   if (loading) {
     return (
       <>
-        <section className="py-20 bg-white min-h-screen mt-20">
+        <section className="bg-white min-h-screen mt-8 mb-8">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -92,7 +92,7 @@ const BookingSuccess: React.FC = () => {
   if (error || !bookingData) {
     return (
       <>
-        <section className="py-20 bg-white min-h-screen mt-20">
+        <section className="bg-white min-h-screen mt-8 mb-8">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="bg-red-50 rounded-xl p-8 text-center">
               <div className="flex justify-center mb-6">
@@ -123,7 +123,7 @@ const BookingSuccess: React.FC = () => {
 
   return (
     <>
-      <section className="py-20 bg-white min-h-screen mt-20">
+      <section className="bg-white min-h-screen mt-8 mb-8">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-green-50 rounded-xl p-8 text-center">
             <div className="flex justify-center mb-6">

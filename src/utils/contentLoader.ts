@@ -20,7 +20,7 @@ export interface VideoItem {
 }
 
 // Parse frontmatter from markdown content
-function parseFrontmatter(content: string): { frontmatter: any; body: string } {
+function parseFrontmatter(content: string): { frontmatter: Record<string, string | boolean | number>; body: string } {
   const frontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/;
   const match = content.match(frontmatterRegex);
   
@@ -32,16 +32,17 @@ function parseFrontmatter(content: string): { frontmatter: any; body: string } {
   const body = match[2];
   
   // Simple YAML parser for frontmatter
-  const frontmatter: any = {};
+  const frontmatter: Record<string, string | boolean | number> = {};
   frontmatterText.split('\n').forEach(line => {
     const colonIndex = line.indexOf(':');
     if (colonIndex > 0) {
       const key = line.substring(0, colonIndex).trim();
-      let value = line.substring(colonIndex + 1).trim();
+      let value: string | boolean | number = line.substring(colonIndex + 1).trim();
       
       // Remove quotes if present
-      if ((value.startsWith('"') && value.endsWith('"')) || 
-          (value.startsWith("'") && value.endsWith("'"))) {
+      if (typeof value === 'string' && 
+          ((value.startsWith('"') && value.endsWith('"')) || 
+           (value.startsWith("'") && value.endsWith("'")))) {
         value = value.slice(1, -1);
       }
       
@@ -59,8 +60,43 @@ function parseFrontmatter(content: string): { frontmatter: any; body: string } {
 // Load blog posts from the content directory
 export async function loadBlogPosts(): Promise<BlogPost[]> {
   try {
-    // In a real implementation, you'd fetch from your content directory
-    // For now, we'll return the sample post
+    // Use Vite's import.meta.glob to load all markdown files from content/blog
+    const blogModules = import.meta.glob('/content/blog/*.md', { as: 'raw' });
+    const posts: BlogPost[] = [];
+
+    for (const [path, moduleLoader] of Object.entries(blogModules)) {
+      try {
+        const content = await moduleLoader();
+        const { frontmatter, body } = parseFrontmatter(content);
+        
+        // Extract slug from filename
+        const filename = path.split('/').pop() || '';
+        const slug = filename.replace('.md', '');
+        
+        const post: BlogPost = {
+          slug,
+          title: String(frontmatter.title || 'Untitled'),
+          date: String(frontmatter.date || new Date().toISOString()),
+          author: String(frontmatter.author || 'Virtual Adventure Killarney'),
+          image: frontmatter.image ? String(frontmatter.image) : undefined,
+          excerpt: frontmatter.excerpt ? String(frontmatter.excerpt) : undefined,
+          body: body.trim(),
+          published: Boolean(frontmatter.published !== false) // Default to true if not specified
+        };
+
+        posts.push(post);
+      } catch (error) {
+        console.error(`Error processing blog post ${path}:`, error);
+      }
+    }
+
+    // Sort posts by date (newest first)
+    posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    return posts;
+  } catch (error) {
+    console.error('Error loading blog posts:', error);
+    // Fallback to sample post if there's an error
     const samplePost: BlogPost = {
       slug: 'welcome-to-virtual-adventure',
       title: 'Welcome to Virtual Adventure Killarney',
@@ -88,9 +124,6 @@ Visit our booking page or call us at +353 (87) 483 8264 to reserve your spot!`,
     };
 
     return [samplePost];
-  } catch (error) {
-    console.error('Error loading blog posts:', error);
-    return [];
   }
 }
 
