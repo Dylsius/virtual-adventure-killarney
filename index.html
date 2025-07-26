@@ -7,12 +7,19 @@
     <script src="https://static.elfsight.com/platform/platform.js" async></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Virtual Adventure Killarney - Complete VR Arcade Website</title>
-    <script>
-      // Netlify Identity redirect for Decap CMS
-      if (window.location.hash.includes('invite_token') || window.location.hash.includes('access_token')) {
-        window.location.href = '/admin/' + window.location.hash;
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <style>
+      .css-rdgl1o-IconWrapper-DecapLogoIcon {
+        width: 200px !important;
+        height: 200px !important;
+        background-image: url("./public/images/uploads/9d91509c-d71a-4f64-b0d9-fac2ab1595f6.jpeg") !important;
+        background-size: contain !important;
+        background-repeat: no-repeat !important;
       }
-    </script>
+      .css-rdgl1o-IconWrapper-DecapLogoIcon svg {
+        display: none !important;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
