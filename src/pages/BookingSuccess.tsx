@@ -28,17 +28,18 @@ const BookingSuccess: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [bookingData, setBookingData] = useState<BookingData | null>(null);
   const [paymentDetails, setPaymentDetails] = useState<PaymentDetails | null>(null);
+  const [formSubmitted, setFormSubmitted] = useState(false);
 
   useEffect(() => {
     const sessionId = searchParams.get('session_id');
     
-    if (!sessionId) {
-      setError('No session ID found');
-      setLoading(false);
-      return;
+    // If we have a session_id, use the original verification flow
+    if (sessionId) {
+      verifyPaymentAndSaveBooking(sessionId);
+    } else {
+      // For direct payment links, get data from localStorage
+      handleDirectPaymentSuccess();
     }
-
-    verifyPaymentAndSaveBooking(sessionId);
   }, [searchParams]);
 
   const verifyPaymentAndSaveBooking = async (sessionId: string) => {
@@ -61,9 +62,98 @@ const BookingSuccess: React.FC = () => {
       setBookingData(booking);
       setPaymentDetails(paymentDetails);
       setLoading(false);
+
+      // Submit to Netlify form after successful payment verification
+      await submitToNetlifyForm(booking);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       setLoading(false);
+    }
+  };
+
+  const handleDirectPaymentSuccess = async () => {
+    try {
+      // Get booking data from localStorage
+      const pendingData = localStorage.getItem('pendingBookingData');
+      
+      if (!pendingData) {
+        setError('No booking data found. Please try booking again.');
+        setLoading(false);
+        return;
+      }
+
+      const storedBookingData = JSON.parse(pendingData);
+      
+      // Convert the stored data to match the expected format
+      const bookingData: BookingData = {
+        name: storedBookingData.name,
+        email: storedBookingData.email,
+        phone: storedBookingData.phone,
+        booking_date: storedBookingData.date,
+        booking_time: storedBookingData.time,
+        experience: storedBookingData.experience,
+        participants: storedBookingData.participants
+      };
+
+      setBookingData(bookingData);
+      setPaymentDetails({ amount: 10, currency: 'EUR' });
+      setLoading(false);
+
+      // Submit to Netlify form
+      await submitToNetlifyForm(bookingData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      setLoading(false);
+    }
+  };
+
+  const submitToNetlifyForm = async (booking: BookingData) => {
+    try {
+      // Get any additional booking data from localStorage if available
+      const pendingData = localStorage.getItem('pendingBookingData');
+      let formData = booking;
+      
+      if (pendingData) {
+        const storedData = JSON.parse(pendingData);
+        // Use stored data to fill any gaps, but prioritize database data
+        formData = { ...storedData, ...booking };
+        // Clean up localStorage
+        localStorage.removeItem('pendingBookingData');
+      }
+
+      // Submit to Netlify form
+      const netlifyFormData = new FormData();
+      netlifyFormData.append('form-name', 'booking');
+      netlifyFormData.append('name', formData.name);
+      netlifyFormData.append('email', formData.email);
+      netlifyFormData.append('phone', formData.phone);
+      netlifyFormData.append('date', formData.booking_date);
+      netlifyFormData.append('time', formData.booking_time);
+      netlifyFormData.append('experience', formData.experience);
+      netlifyFormData.append('participants', formData.participants.toString());
+      netlifyFormData.append('payment-status', 'paid');
+      netlifyFormData.append('deposit-amount', '10.00');
+
+      const formParams = new URLSearchParams();
+      for (const [key, value] of netlifyFormData.entries()) {
+        formParams.append(key, value as string);
+      }
+
+      const response = await fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formParams.toString()
+      });
+
+      if (response.ok) {
+        setFormSubmitted(true);
+        console.log('Successfully submitted booking to Netlify form');
+      } else {
+        console.error('Failed to submit to Netlify form:', response.statusText);
+      }
+    } catch (err) {
+      console.error('Error submitting to Netlify form:', err);
+      // Don't set error state here as the main flow succeeded
     }
   };
 
@@ -198,6 +288,11 @@ const BookingSuccess: React.FC = () => {
                   <p className="text-green-700 text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                     €{paymentDetails.amount.toFixed(2)} {t('depositPaid')}
                   </p>
+                  {formSubmitted && (
+                    <p className="text-green-600 text-xs mt-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                      ✓ Booking details submitted successfully
+                    </p>
+                  )}
                 </div>
               )}
             </div>

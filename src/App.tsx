@@ -11,7 +11,6 @@ import BlogPost from './pages/BlogPost';
 import VideoGallery from './pages/VideoGallery';
 import VideoPost from './pages/VideoPost';
 import Reviews from './pages/Reviews';
-import Login from './pages/Login';
 import CookiesPopup from './components/CookiesPopup';
 import ScrollToTop from './components/ScrollToTop';
 
@@ -33,7 +32,6 @@ function App() {
               <Route path="/videos" element={<VideoGallery />} />
               <Route path="/videos/:slug" element={<VideoPost />} />
               <Route path="/reviews" element={<Reviews />} />
-              <Route path="/login" element={<Login />} />
             </Routes>
             
             <CookiesPopup />
