@@ -60,8 +60,8 @@ function generateAvailableSlots() {
           hour12: false 
         });
         
-        // Create alphanumeric-only value for Stripe
-        const alphanumericValue = `${breakSlot.getDate()}${breakSlot.getMonth() + 1}${breakSlot.getFullYear()}${breakSlot.getHours()}${breakSlot.getMinutes().toString().padStart(2, '0')}`;
+        // Create alphanumeric-only value for Stripe (format: DDMMYYYYHHMM)
+        const alphanumericValue = `${breakSlot.getDate().toString().padStart(2, '0')}${(breakSlot.getMonth() + 1).toString().padStart(2, '0')}${breakSlot.getFullYear()}${breakSlot.getHours().toString().padStart(2, '0')}${breakSlot.getMinutes().toString().padStart(2, '0')}`;
         
         slots.push({
           value: alphanumericValue,
@@ -78,8 +78,8 @@ function generateAvailableSlots() {
           hour12: false 
         });
         
-        // Create alphanumeric-only value for Stripe
-        const alphanumericValue = `${slotTime.getDate()}${slotTime.getMonth() + 1}${slotTime.getFullYear()}${slotTime.getHours()}${slotTime.getMinutes().toString().padStart(2, '0')}`;
+        // Create alphanumeric-only value for Stripe (format: DDMMYYYYHHMM)
+        const alphanumericValue = `${slotTime.getDate().toString().padStart(2, '0')}${(slotTime.getMonth() + 1).toString().padStart(2, '0')}${slotTime.getFullYear()}${slotTime.getHours().toString().padStart(2, '0')}${slotTime.getMinutes().toString().padStart(2, '0')}`;
         
         slots.push({
           value: alphanumericValue,

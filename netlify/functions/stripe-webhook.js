@@ -79,22 +79,40 @@ exports.handler = async (event, context) => {
           } else if (field.key === 'booking_slot' && field.dropdown?.value) {
             // Parse the booking slot back to readable format
             const slotValue = field.dropdown.value;
-            // Convert alphanumeric back to date
-            if (slotValue.length >= 8) {
-              const day = parseInt(slotValue.substring(0, slotValue.length - 8));
-              const month = parseInt(slotValue.substring(slotValue.length - 8, slotValue.length - 6));
-              const year = parseInt(slotValue.substring(slotValue.length - 6, slotValue.length - 2));
-              const hour = parseInt(slotValue.substring(slotValue.length - 4, slotValue.length - 2));
-              const minute = parseInt(slotValue.substring(slotValue.length - 2));
-              
-              const date = new Date(year, month - 1, day, hour, minute);
-              const dateStr = date.toLocaleDateString('en-GB');
-              const timeStr = date.toLocaleTimeString('en-GB', { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                hour12: false 
-              });
-              bookingData.booking_slot = `${dateStr} at ${timeStr}`;
+            // Convert alphanumeric back to date (format: DDMMYYYYHHMM = 12 characters)
+            if (slotValue.length === 12) {
+              try {
+                // Extract date components from alphanumeric string
+                const dayStr = slotValue.substring(0, 2);
+                const monthStr = slotValue.substring(2, 4);
+                const yearStr = slotValue.substring(4, 8);
+                const hourStr = slotValue.substring(8, 10);
+                const minuteStr = slotValue.substring(10, 12);
+                
+                const day = parseInt(dayStr);
+                const month = parseInt(monthStr);
+                const year = parseInt(yearStr);
+                const hour = parseInt(hourStr);
+                const minute = parseInt(minuteStr);
+                
+                const date = new Date(year, month - 1, day, hour, minute);
+                
+                // Validate the date
+                if (!isNaN(date.getTime())) {
+                  const dateStr = date.toLocaleDateString('en-GB');
+                  const timeStr = date.toLocaleTimeString('en-GB', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: false 
+                  });
+                  bookingData.booking_slot = `${dateStr} at ${timeStr}`;
+                } else {
+                  bookingData.booking_slot = slotValue;
+                }
+              } catch (error) {
+                console.error('Error parsing booking slot:', error);
+                bookingData.booking_slot = slotValue;
+              }
             } else {
               bookingData.booking_slot = slotValue;
             }
