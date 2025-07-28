@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Clock, User, Mail, Phone, Gamepad2, Calendar } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { stripeProducts } from '../stripe-config';
 
 interface BookingData {
   name: string;
@@ -21,7 +20,6 @@ const timeSlots = [
 const BookingForm: React.FC = () => {
   const { t } = useLanguage();
 
-  console.log('🚀 BookingForm component loaded at:', new Date().toISOString());
 
   const experiences = [
     `${t('carName')} - ${t('carGames')}`,
@@ -42,7 +40,9 @@ const BookingForm: React.FC = () => {
     participants: 1
   });
 
- 
+  const [showPayment, setShowPayment] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -53,12 +53,35 @@ const BookingForm: React.FC = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-  // No need to prevent default, Netlify will handle the submission
-  // No client-side state changes needed here for payment flow
-};
+    e.preventDefault();
+    setError(null);
 
+    if (!isFormValid) {
+      setError('Please fill in all required fields');
+      return;
+    }
 
+    setShowPayment(true);
+  };
 
+  const handlePayment = async () => {
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      // Store booking data in localStorage for later use
+      localStorage.setItem('pendingBookingData', JSON.stringify(formData));
+
+      // Use the direct Stripe payment link
+      const stripePaymentUrl = 'https://buy.stripe.com/bJedR9go75ZggPIdwh9IQ00';
+      
+      // Redirect directly to Stripe payment link
+      window.location.href = stripePaymentUrl;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      setIsProcessing(false);
+    }
+  };
 
   const isFormValid = formData.name && formData.email && formData.phone && 
                      formData.date && formData.time && formData.experience;
@@ -79,13 +102,7 @@ const BookingForm: React.FC = () => {
         </div>
 
         <div className="bg-blue-50 rounded-xl p-8">
-         <form
-    data-netlify="true"
-    name="booking"
-    action="https://buy.stripe.com/bJedR9go75ZggPIdwh9IQ00"
-    method="POST"
-    className="space-y-6"
-> <input type="hidden" name="form-name" value="booking" />
+          <form onSubmit={handleSubmit} className="space-y-6">
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -257,6 +274,7 @@ const BookingForm: React.FC = () => {
                 </div>
                 
                 <button
+                  type="button"
                   onClick={handlePayment}
                   disabled={isProcessing}
                   className={`w-full py-4 px-6 rounded-lg font-semibold text-lg transition-all ${
@@ -277,6 +295,7 @@ const BookingForm: React.FC = () => {
                 </button>
                 
                 <button
+                  type="button"
                   onClick={() => setShowPayment(false)}
                   className="w-full py-2 px-4 text-blue-600 hover:text-blue-800 font-medium"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}

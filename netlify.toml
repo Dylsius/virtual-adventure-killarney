@@ -1,0 +1,29 @@
+[build]
+  # Build command for your React app
+  command = "npm run build"
+  # Output directory where your built files will be
+  publish = "dist"
+  # Functions directory
+  functions = "netlify/functions"
+
+[functions]
+  # Node.js version for functions
+  node_bundler = "esbuild"
+
+[[redirects]]
+  # Handle client-side routing for SPA
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  conditions = {Role = ["admin"]}
+
+[[redirects]]
+  # Catch-all for SPA routing
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[dev]
+  # Local development settings
+  framework = "vite"
+  targetPort = 5173 
