@@ -10,6 +10,24 @@
   </head>
   <body>
     <div id="root"></div>
+    
+    <!-- Hidden form for Netlify to detect VR booking submissions from Stripe webhook -->
+    <form name="vr-bookings" data-netlify="true" style="display: none;">
+      <input type="hidden" name="form-name" value="vr-bookings" />
+      <input type="text" name="session_id" />
+      <input type="text" name="amount_paid" />
+      <input type="text" name="currency" />
+      <input type="text" name="payment_status" />
+      <input type="email" name="customer_email" />
+      <input type="text" name="customer_name" />
+      <input type="text" name="customer_phone" />
+      <input type="text" name="billing_address" />
+      <input type="text" name="vr_experience" />
+      <input type="text" name="participants" />
+      <input type="text" name="booking_slot" />
+      <input type="datetime-local" name="booking_date" />
+    </form>
+    
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

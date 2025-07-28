@@ -133,26 +133,6 @@ const BookingSuccess: React.FC = () => {
               {t('paymentSuccessMessage')}
             </p>
 
-            {/* Payment Confirmation */}
-            {paymentDetails && (
-              <div className="bg-white rounded-lg p-6 mb-8">
-                <h3 className="text-xl font-semibold text-blue-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                  Payment Confirmation
-                </h3>
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-green-800 font-medium text-sm mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                    {t('paymentConfirmed')}
-                  </p>
-                  <p className="text-green-700 text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                    €{paymentDetails.amount.toFixed(2)} {t('depositPaid')}
-                  </p>
-                  <p className="text-green-600 text-xs mt-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                    ✓ Your booking details have been received
-                  </p>
-                </div>
-              </div>
-            )}
-
             {/* Next Steps */}
             <div className="bg-blue-50 rounded-lg p-6 mb-8">
               <h4 className="text-lg font-semibold text-blue-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>
