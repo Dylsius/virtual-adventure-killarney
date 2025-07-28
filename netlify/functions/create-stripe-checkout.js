@@ -2,17 +2,17 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 // VR Experience options (matching your form)
 const VR_EXPERIENCES = [
-  { value: 'car_racing', label: 'CAR - 8 racing games' },
-  { value: 'double_vr_egg', label: 'DOUBLE VR EGG CHAIR - 200 games (variety of genres)' },
-  { value: 'ultimate_crossing', label: 'ULTIMATE CROSSING 2 - 20 games' },
-  { value: 'vr_360', label: 'VR 360 - 14 games' },
-  { value: 'virtual_relaxation', label: 'VIRTUAL RELAXATION - Relaxation experiences' },
-  { value: 'kind_bear', label: 'KIND BEAR - Children\'s adventures' }
+  { value: 'carracing', label: 'CAR - 8 racing games' },
+  { value: 'doublevregg', label: 'DOUBLE VR EGG CHAIR - 200 games (variety of genres)' },
+  { value: 'ultimatecrossing', label: 'ULTIMATE CROSSING 2 - 20 games' },
+  { value: 'vr360', label: 'VR 360 - 14 games' },
+  { value: 'virtualrelaxation', label: 'VIRTUAL RELAXATION - Relaxation experiences' },
+  { value: 'kindbear', label: 'KIND BEAR - Children\'s adventures' }
 ];
 
 // Participant options (1-10 people)
 const PARTICIPANT_OPTIONS = Array.from({ length: 10 }, (_, i) => ({
-  value: `${i + 1}_people`,
+  value: `${i + 1}people`,
   label: `${i + 1} ${i === 0 ? 'person' : 'people'}`
 }));
 
@@ -60,8 +60,11 @@ function generateAvailableSlots() {
           hour12: false 
         });
         
+        // Create alphanumeric-only value for Stripe
+        const alphanumericValue = `${breakSlot.getDate()}${breakSlot.getMonth() + 1}${breakSlot.getFullYear()}${breakSlot.getHours()}${breakSlot.getMinutes().toString().padStart(2, '0')}`;
+        
         slots.push({
-          value: `${dateStr}_${timeStr}`,
+          value: alphanumericValue,
           label: `${dateStr} at ${timeStr}`
         });
       } else {
@@ -75,8 +78,11 @@ function generateAvailableSlots() {
           hour12: false 
         });
         
+        // Create alphanumeric-only value for Stripe
+        const alphanumericValue = `${slotTime.getDate()}${slotTime.getMonth() + 1}${slotTime.getFullYear()}${slotTime.getHours()}${slotTime.getMinutes().toString().padStart(2, '0')}`;
+        
         slots.push({
-          value: `${dateStr}_${timeStr}`,
+          value: alphanumericValue,
           label: `${dateStr} at ${timeStr}`
         });
       }
