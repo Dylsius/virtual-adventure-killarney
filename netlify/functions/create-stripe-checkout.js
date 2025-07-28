@@ -119,7 +119,7 @@ exports.handler = async (event, context) => {
 
   try {
     const { 
-      amount = 50, // Default €10.00 deposit in cents
+      amount = 1000, // Default €10.00 deposit in cents
       currency = 'eur',
       success_url,
       cancel_url,
