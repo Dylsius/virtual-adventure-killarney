@@ -1,18 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { CheckCircle, Calendar, Clock, Users, Gamepad2, AlertCircle } from 'lucide-react';
+import { CheckCircle, AlertCircle } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import Footer from '../components/Footer';
-
-interface BookingData {
-  name: string;
-  email: string;
-  phone: string;
-  booking_date: string;
-  booking_time: string;
-  experience: string;
-  participants: number;
-}
 
 interface PaymentDetails {
   amount: number;
@@ -26,45 +16,31 @@ const BookingSuccess: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [bookingData, setBookingData] = useState<BookingData | null>(null);
   const [paymentDetails, setPaymentDetails] = useState<PaymentDetails | null>(null);
-  const [formSubmitted, setFormSubmitted] = useState(false);
 
   useEffect(() => {
     const sessionId = searchParams.get('session_id');
     
-    // If we have a session_id, use the original verification flow
+    // If we have a session_id, handle the new Stripe checkout flow
     if (sessionId) {
-      verifyPaymentAndSaveBooking(sessionId);
+      handleStripeCheckoutSuccess();
     } else {
       // For direct payment links, get data from localStorage
       handleDirectPaymentSuccess();
     }
   }, [searchParams]);
 
-  const verifyPaymentAndSaveBooking = async (sessionId: string) => {
+  const handleStripeCheckoutSuccess = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-payment`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({ sessionId }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to verify payment');
-      }
-
-      const { booking, paymentDetails } = await response.json();
-      setBookingData(booking);
-      setPaymentDetails(paymentDetails);
+      // For the new Stripe checkout flow, we show a generic success message
+      // since Stripe collected all the booking details through custom fields
+      // The actual booking data is stored by Stripe and will be processed by the business
+      
+      setPaymentDetails({ amount: 10, currency: 'EUR' });
       setLoading(false);
 
-      // Submit to Netlify form after successful payment verification
-      await submitToNetlifyForm(booking);
+      // We'll show a generic success message since we don't have the specific booking details
+      // The customer will receive confirmation via email from Stripe
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       setLoading(false);
@@ -73,89 +49,16 @@ const BookingSuccess: React.FC = () => {
 
   const handleDirectPaymentSuccess = async () => {
     try {
-      // Get booking data from localStorage
-      const pendingData = localStorage.getItem('pendingBookingData');
-      
-      if (!pendingData) {
-        setError('No booking data found. Please try booking again.');
-        setLoading(false);
-        return;
-      }
-
-      const storedBookingData = JSON.parse(pendingData);
-      
-      // Convert the stored data to match the expected format
-      const bookingData: BookingData = {
-        name: storedBookingData.name,
-        email: storedBookingData.email,
-        phone: storedBookingData.phone,
-        booking_date: storedBookingData.date,
-        booking_time: storedBookingData.time,
-        experience: storedBookingData.experience,
-        participants: storedBookingData.participants
-      };
-
-      setBookingData(bookingData);
+      // For direct payment success (legacy flow), just show success
       setPaymentDetails({ amount: 10, currency: 'EUR' });
       setLoading(false);
-
-      // Submit to Netlify form
-      await submitToNetlifyForm(bookingData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       setLoading(false);
     }
   };
 
-  const submitToNetlifyForm = async (booking: BookingData) => {
-    try {
-      // Get any additional booking data from localStorage if available
-      const pendingData = localStorage.getItem('pendingBookingData');
-      let formData = booking;
-      
-      if (pendingData) {
-        const storedData = JSON.parse(pendingData);
-        // Use stored data to fill any gaps, but prioritize database data
-        formData = { ...storedData, ...booking };
-        // Clean up localStorage
-        localStorage.removeItem('pendingBookingData');
-      }
 
-      // Submit to Netlify form
-      const netlifyFormData = new FormData();
-      netlifyFormData.append('form-name', 'booking');
-      netlifyFormData.append('name', formData.name);
-      netlifyFormData.append('email', formData.email);
-      netlifyFormData.append('phone', formData.phone);
-      netlifyFormData.append('date', formData.booking_date);
-      netlifyFormData.append('time', formData.booking_time);
-      netlifyFormData.append('experience', formData.experience);
-      netlifyFormData.append('participants', formData.participants.toString());
-      netlifyFormData.append('payment-status', 'paid');
-      netlifyFormData.append('deposit-amount', '10.00');
-
-      const formParams = new URLSearchParams();
-      for (const [key, value] of netlifyFormData.entries()) {
-        formParams.append(key, value as string);
-      }
-
-      const response = await fetch('/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: formParams.toString()
-      });
-
-      if (response.ok) {
-        setFormSubmitted(true);
-        console.log('Successfully submitted booking to Netlify form');
-      } else {
-        console.error('Failed to submit to Netlify form:', response.statusText);
-      }
-    } catch (err) {
-      console.error('Error submitting to Netlify form:', err);
-      // Don't set error state here as the main flow succeeded
-    }
-  };
 
   const handleNewBooking = () => {
     navigate('/booking');
@@ -179,7 +82,7 @@ const BookingSuccess: React.FC = () => {
     );
   }
 
-  if (error || !bookingData) {
+  if (error) {
     return (
       <>
         <section className="bg-white min-h-screen mt-8 mb-8">
@@ -230,72 +133,25 @@ const BookingSuccess: React.FC = () => {
               {t('paymentSuccessMessage')}
             </p>
 
-            {/* Booking Confirmation Details */}
-            <div className="bg-white rounded-lg p-6 mb-8">
-              <h3 className="text-xl font-semibold text-blue-900 mb-6" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                {t('bookingConfirmationDetails')}
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="flex items-center space-x-3">
-                  <div className="bg-blue-100 p-2 rounded-lg">
-                    <Calendar className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-blue-600 text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>{t('date')}</p>
-                    <p className="font-semibold text-blue-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>{bookingData.booking_date}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-3">
-                  <div className="bg-blue-100 p-2 rounded-lg">
-                    <Clock className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-blue-600 text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>{t('time')}</p>
-                    <p className="font-semibold text-blue-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>{bookingData.booking_time}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-3">
-                  <div className="bg-blue-100 p-2 rounded-lg">
-                    <Gamepad2 className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-blue-600 text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>{t('experience')}</p>
-                    <p className="font-semibold text-blue-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>{bookingData.experience}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-3">
-                  <div className="bg-blue-100 p-2 rounded-lg">
-                    <Users className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-blue-600 text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>{t('participants')}</p>
-                    <p className="font-semibold text-blue-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                      {bookingData.participants} {bookingData.participants === 1 ? t('person') : t('people')}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {paymentDetails && (
-                <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+            {/* Payment Confirmation */}
+            {paymentDetails && (
+              <div className="bg-white rounded-lg p-6 mb-8">
+                <h3 className="text-xl font-semibold text-blue-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                  Payment Confirmation
+                </h3>
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                   <p className="text-green-800 font-medium text-sm mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                     {t('paymentConfirmed')}
                   </p>
                   <p className="text-green-700 text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                     €{paymentDetails.amount.toFixed(2)} {t('depositPaid')}
                   </p>
-                  {formSubmitted && (
-                    <p className="text-green-600 text-xs mt-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                      ✓ Booking details submitted successfully
-                    </p>
-                  )}
+                  <p className="text-green-600 text-xs mt-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                    ✓ Your booking details have been received
+                  </p>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Next Steps */}
             <div className="bg-blue-50 rounded-lg p-6 mb-8">

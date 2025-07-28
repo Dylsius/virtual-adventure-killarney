@@ -112,7 +112,7 @@ export const translations = {
     
     // Payment Success
     paymentSuccessTitle: "Booking Confirmed!",
-    paymentSuccessMessage: "Thank you! Your €0.10 deposit has been processed and your VR experience is confirmed.",
+    paymentSuccessMessage: "Thank you! Your €10 deposit has been processed and your VR experience is confirmed.",
     bookingConfirmationDetails: "Booking Confirmation Details",
     date: "Date",
     time: "Time",
@@ -324,7 +324,7 @@ export const translations = {
     
     // Payment Success
     paymentSuccessTitle: "Бронювання підтверджено!",
-    paymentSuccessMessage: "Дякуємо! Ваш депозит €0.10 оброблено і ваш VR досвід підтверджено.",
+    paymentSuccessMessage: "Дякуємо! Ваш депозит €10 оброблено і ваш VR досвід підтверджено.",
     bookingConfirmationDetails: "Деталі підтвердження бронювання",
     date: "Дата",
     time: "Час",
@@ -536,7 +536,7 @@ export const translations = {
     
     // Payment Success
     paymentSuccessTitle: "¡Reserva confirmada!",
-    paymentSuccessMessage: "¡Gracias! Tu depósito de €0.10 ha sido procesado y tu experiencia VR está confirmada.",
+    paymentSuccessMessage: "¡Gracias! Tu depósito de €10 ha sido procesado y tu experiencia VR está confirmada.",
     bookingConfirmationDetails: "Detalles de confirmación de reserva",
     date: "Fecha",
     time: "Hora",

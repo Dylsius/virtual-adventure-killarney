@@ -27,6 +27,8 @@ function App() {
               <Route path="/about" element={<About />} />
               <Route path="/booking" element={<Booking />} />
               <Route path="/booking-success" element={<BookingSuccess />} />
+              <Route path="/success" element={<BookingSuccess />} />
+              <Route path="/cancel" element={<Booking />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/videos" element={<VideoGallery />} />

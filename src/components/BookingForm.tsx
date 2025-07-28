@@ -1,90 +1,41 @@
 import React, { useState } from 'react';
-import { Clock, User, Mail, Phone, Gamepad2, Calendar } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-
-interface BookingData {
-  name: string;
-  email: string;
-  phone: string;
-  date: string;
-  time: string;
-  experience: string;
-  participants: number;
-}
-
-const timeSlots = [
-  '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
-  '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30'
-];
 
 const BookingForm: React.FC = () => {
   const { t } = useLanguage();
-
-
-  const experiences = [
-    `${t('carName')} - ${t('carGames')}`,
-    `${t('eggChairName')} - ${t('eggChairGames')}`,
-    `${t('ultimateCrossingName')} - ${t('ultimateCrossingGames')}`,
-    `${t('vr360Name')} - ${t('vr360Games')}`,
-    `${t('virtualRelaxationName')} - ${t('virtualRelaxationGames')}`,
-    `${t('kindBearName')} - ${t('kindBearGames')}`
-  ];
-
-  const [formData, setFormData] = useState<BookingData>({
-    name: '',
-    email: '',
-    phone: '',
-    date: '',
-    time: '',
-    experience: '',
-    participants: 1
-  });
-
-  const [showPayment, setShowPayment] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
-    if (!isFormValid) {
-      setError('Please fill in all required fields');
-      return;
-    }
-
-    setShowPayment(true);
-  };
-
-  const handlePayment = async () => {
+  const handleBooking = async () => {
     setIsProcessing(true);
     setError(null);
 
     try {
-      // Store booking data in localStorage for later use
-      localStorage.setItem('pendingBookingData', JSON.stringify(formData));
+      // Call the Netlify function to create Stripe checkout session
+      const response = await fetch('/.netlify/functions/create-stripe-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          success_url: `${window.location.origin}/success`,
+          cancel_url: `${window.location.origin}/booking`,
+        }),
+      });
 
-      // Use the direct Stripe payment link
-      const stripePaymentUrl = 'https://buy.stripe.com/bJedR9go75ZggPIdwh9IQ00';
+      if (!response.ok) {
+        throw new Error('Failed to create checkout session');
+      }
+
+      const { url } = await response.json();
       
-      // Redirect directly to Stripe payment link
-      window.location.href = stripePaymentUrl;
+      // Redirect to Stripe checkout
+      window.location.href = url;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       setIsProcessing(false);
     }
   };
-
-  const isFormValid = formData.name && formData.email && formData.phone && 
-                     formData.date && formData.time && formData.experience;
 
   return (
     <section id="booking" className="bg-white mt-8 mb-8">
@@ -98,213 +49,63 @@ const BookingForm: React.FC = () => {
             />
           </div>
           <h2 className="text-4xl font-bold text-blue-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>{t('bookYourAdventure')}</h2>
-          <p className="text-xl text-blue-700" style={{ fontFamily: 'Montserrat, sans-serif' }}>{t('reserveYourSpot')}</p>
+          <p className="text-xl text-blue-700 mb-8" style={{ fontFamily: 'Montserrat, sans-serif' }}>{t('reserveYourSpot')}</p>
         </div>
 
-        <div className="bg-blue-50 rounded-xl p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="flex items-center text-sm font-medium text-blue-900 mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                  <User className="h-4 w-4 mr-2" />
-                  {t('fullName')} {t('required')}
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                  placeholder={t('enterFullName')}
-                />
-              </div>
-
-              <div>
-                <label className="flex items-center text-sm font-medium text-blue-900 mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                  <Mail className="h-4 w-4 mr-2" />
-                  {t('emailAddress')} {t('required')}
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                  placeholder={t('enterEmail')}
-                />
-              </div>
-
-              <div>
-                <label className="flex items-center text-sm font-medium text-blue-900 mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                  <Phone className="h-4 w-4 mr-2" />
-                  {t('phoneNumber')} {t('required')}
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                  placeholder={t('enterPhone')}
-                />
-              </div>
-
-              <div>
-                <label className="flex items-center text-sm font-medium text-blue-900 mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                  <User className="h-4 w-4 mr-2" />
-                  {t('numberOfParticipants')}
-                </label>
-                <select
-                  name="participants"
-                  value={formData.participants}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
-                    <option key={num} value={num}>{num} {num === 1 ? t('person') : t('people')}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="flex items-center text-sm font-medium text-blue-900 mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                  <Calendar className="h-4 w-4 mr-2" />
-                  {t('preferredDate')} {t('required')}
-                </label>
-                <input
-                  type="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleInputChange}
-                  required
-                  min={new Date().toISOString().split('T')[0]}
-                  className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                />
-              </div>
-
-              <div>
-                <label className="flex items-center text-sm font-medium text-blue-900 mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                  <Clock className="h-4 w-4 mr-2" />
-                  {t('preferredTime')} {t('required')}
-                </label>
-                <select
-                  name="time"
-                  value={formData.time}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  <option value="">{t('selectTimeSlot')}</option>
-                  {timeSlots.map(time => (
-                    <option key={time} value={time}>{time}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="flex items-center text-sm font-medium text-blue-900 mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                <Gamepad2 className="h-4 w-4 mr-2" />
-                {t('vrExperience')} {t('required')}
-              </label>
-              <select
-                name="experience"
-                value={formData.experience}
-                onChange={handleInputChange}
-                required
-                className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                style={{ fontFamily: 'Montserrat, sans-serif' }}
-              >
-                <option value="">{t('chooseVrExperience')}</option>
-                {experiences.map(exp => (
-                  <option key={exp} value={exp}>{exp}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="bg-blue-100 p-4 rounded-lg">
+        <div className="bg-blue-50 rounded-xl p-8 text-center">
+          <div className="mb-8">
+            <h3 className="text-2xl font-semibold text-blue-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+              Complete Your Booking
+            </h3>
+            <p className="text-blue-700 mb-6" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+              Click below to proceed to our secure booking form where you can select your VR experience, 
+              preferred date & time, and complete your €10 deposit payment.
+            </p>
+            
+            <div className="bg-blue-100 p-4 rounded-lg mb-6">
               <p className="text-sm text-blue-800" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                <strong>{t('note')}:</strong> A €10 deposit is required to secure your booking.
+                <strong>What's included:</strong>
+              </p>
+              <ul className="text-sm text-blue-700 mt-2 space-y-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                <li>• Choose from 6 different VR experiences</li>
+                <li>• Select your preferred date and time</li>
+                <li>• Book for 1-10 participants</li>
+                <li>• Secure your booking with just a €10 deposit</li>
+              </ul>
+            </div>
+          </div>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <p className="text-red-800 text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                {error}
               </p>
             </div>
+          )}
 
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-red-800 text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                  {error}
-                </p>
+          <button
+            onClick={handleBooking}
+            disabled={isProcessing}
+            className={`w-full py-4 px-6 rounded-lg font-semibold text-lg transition-all ${
+              isProcessing
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl'
+            }`}
+            style={{ fontFamily: 'Montserrat, sans-serif' }}
+          >
+            {isProcessing ? (
+              <div className="flex items-center justify-center space-x-2">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                <span>Creating Booking Session...</span>
               </div>
-            )}
-
-            {!showPayment ? (
-              <button
-                type="submit"
-                disabled={!isFormValid}
-                className={`w-full py-4 px-6 rounded-lg font-semibold text-lg transition-all ${
-                  isFormValid
-                    ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
-                style={{ fontFamily: 'Montserrat, sans-serif' }}
-              >
-                Review Booking
-              </button>
             ) : (
-              <div className="space-y-4">
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <h3 className="text-lg font-semibold text-green-800 mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                    Booking Summary
-                  </h3>
-                  <div className="space-y-1 text-sm text-green-700">
-                    <p><strong>Date:</strong> {formData.date}</p>
-                    <p><strong>Time:</strong> {formData.time}</p>
-                    <p><strong>Experience:</strong> {formData.experience}</p>
-                    <p><strong>Participants:</strong> {formData.participants}</p>
-                  </div>
-                </div>
-                
-                <button
-                  type="button"
-                  onClick={handlePayment}
-                  disabled={isProcessing}
-                  className={`w-full py-4 px-6 rounded-lg font-semibold text-lg transition-all ${
-                    isProcessing
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl'
-                  }`}
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  {isProcessing ? (
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      <span>Processing...</span>
-                    </div>
-                  ) : (
-                    'Pay €10 Deposit'
-                  )}
-                </button>
-                
-                <button
-                  type="button"
-                  onClick={() => setShowPayment(false)}
-                  className="w-full py-2 px-4 text-blue-600 hover:text-blue-800 font-medium"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  ← Back to Edit Booking
-                </button>
-              </div>
+              'Book Your VR Adventure Now'
             )}
-          </form>
+          </button>
+          
+          <p className="text-xs text-blue-600 mt-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+            Secure payment processing powered by Stripe
+          </p>
         </div>
       </div>
     </section>
