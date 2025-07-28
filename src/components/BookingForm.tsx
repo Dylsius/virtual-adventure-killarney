@@ -42,9 +42,7 @@ const BookingForm: React.FC = () => {
     participants: 1
   });
 
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showPayment, setShowPayment] = useState(false);
+ 
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -55,92 +53,12 @@ const BookingForm: React.FC = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+  // No need to prevent default, Netlify will handle the submission
+  // No client-side state changes needed here for payment flow
+};
 
-    setShowPayment(true);
-  };
 
-  const handlePayment = async () => {
-    console.log('=== PAYMENT FUNCTION STARTED ===');
-    console.log('stripeProducts array:', stripeProducts);
-    
-    console.log('=== PAYMENT FUNCTION STARTED ===');
-    console.log('stripeProducts array:', stripeProducts);
-    
-    setIsProcessing(true);
-    setError(null);
 
-    try {
-      // Get the booking deposit price ID from stripe config
-      const bookingProduct = stripeProducts.find(product => product.name === 'Booking deposit');
-      
-      console.log('Booking product found:', bookingProduct);
-      
-      console.log('Booking product found:', bookingProduct);
-      
-      if (!bookingProduct) {
-        console.log('ERROR: Booking product not found!');
-        console.log('ERROR: Booking product not found!');
-        throw new Error('Booking product configuration not found');
-      }
-
-      console.log('Price ID to be sent:', bookingProduct.priceId);
-      console.log('Form data to be sent:', formData);
-
-      console.log('Price ID to be sent:', bookingProduct.priceId);
-      console.log('Form data to be sent:', formData);
-
-      const requestBody = {
-        priceId: bookingProduct.priceId,
-        bookingData: {
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          date: formData.date,
-          time: formData.time,
-          experience: formData.experience,
-          participants: formData.participants,
-        },
-      };
-
-      console.log('Full request body:', requestBody);
-
-      console.log('Full request body:', requestBody);
-
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
-
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.log('Error response data:', errorData);
-        console.log('Error response data:', errorData);
-        throw new Error(errorData.error || 'Failed to create checkout session');
-      }
-
-      const { url } = await response.json();
-      window.location.href = url;
-      console.log('Stripe checkout URL received:', url);
-    } catch (err) {
-      console.log('Caught error:', err);
-      console.log('Caught error:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
 
   const isFormValid = formData.name && formData.email && formData.phone && 
                      formData.date && formData.time && formData.experience;
@@ -161,7 +79,14 @@ const BookingForm: React.FC = () => {
         </div>
 
         <div className="bg-blue-50 rounded-xl p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+         <form
+    data-netlify="true"
+    name="booking"
+    action="https://buy.stripe.com/bJedR9go75ZggPIdwh9IQ00"
+    method="POST"
+    className="space-y-6"
+> <input type="hidden" name="form-name" value="booking" />
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="flex items-center text-sm font-medium text-blue-900 mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
